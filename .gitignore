@@ -4,3 +4,7 @@ src/*_x
 src/*_x.exe
 
 .idea/*
+
+.cproject
+.project
+
