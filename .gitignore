@@ -1,7 +1,7 @@
-src/fhe.a
-src/*.o
-src/*_x
-src/*_x.exe
+helib/src/fhe.a
+helib/src/*.o
+helib/src/*_x
+helib/src/*_x.exe
 
 .idea/*
 
