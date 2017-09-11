@@ -15,7 +15,7 @@ CC = g++
 #CFLAGS = -g -O2 -Wfatal-errors -Wshadow -Wall -I/usr/local/include 
 #CFLAGS = -g -O2 -std=c++11 -pthread -DFHE_THREADS -DFHE_BOOT_THREADS -fmax-errors=2
 #CFLAGS = -g -O2 -std=c++11 -fmax-errors=2
-CFLAGS = -g -O2 -std=c++11 -fmax-errors=2 -I/home/arosha/sw/include/
+CFLAGS = -g -O2 -std=c++11 -fPIC -fmax-errors=2 -I/home/arosha/sw/include/
 
 # useful flags:
 #   -std=c++11
