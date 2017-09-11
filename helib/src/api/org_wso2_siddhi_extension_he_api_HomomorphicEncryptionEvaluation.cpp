@@ -56,6 +56,6 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncry
 
 	stringstream ssResult;
 	ssResult << c1;
-	const char* resultStr = ssResult.str().c_str();
-	return env->NewStringUTF(resultStr);
+	jstring resultStr = env->NewStringUTF(ssResult.str().c_str());
+	return resultStr;
 }

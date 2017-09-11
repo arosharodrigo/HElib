@@ -92,8 +92,8 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDe
 
 	stringstream ssEncryptedVal;
 	ssEncryptedVal << encryptedVal;
-	const char* cStr = ssEncryptedVal.str().c_str();
-	return env->NewStringUTF(cStr);
+	jstring encryptedStr = env->NewStringUTF(ssEncryptedVal.str().c_str());
+	return encryptedStr;
 }
 
 JNIEXPORT jlong JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_decryptLong
@@ -125,8 +125,9 @@ JNIEXPORT jlong JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecS
 
 	NewPlaintextArray npa(ea);
 	ea.decrypt(encryptedValCyper, secretKey, npa);
-	vector<ZZX> vector;
-	decode(ea, vector, npa);
-
-	return vector[0][0].SinglePrecision();
+	vector<ZZX> decryptedVector;
+	decode(ea, decryptedVector, npa);
+	long decryptedNumber = 0;
+	conv(decryptedNumber, decryptedVector[0][0]);
+	return decryptedNumber;
 }
