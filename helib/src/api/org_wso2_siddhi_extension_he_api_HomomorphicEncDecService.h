@@ -47,6 +47,22 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDe
 JNIEXPORT jlong JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_decryptLong
   (JNIEnv *, jobject, jstring);
 
+/*
+ * Class:     org_wso2_siddhi_extension_he_api_HomomorphicEncDecService
+ * Method:    encryptLong
+ * Signature: (J)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_encryptLongVector
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_wso2_siddhi_extension_he_api_HomomorphicEncDecService
+ * Method:    decryptLong
+ * Signature: (Ljava/lang/String;)J
+ */
+JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_decryptLongVector
+  (JNIEnv *, jobject, jstring);
+
 #ifdef __cplusplus
 }
 #endif

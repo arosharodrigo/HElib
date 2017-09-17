@@ -4,6 +4,14 @@
 #include <fstream>
 #include <NTL/ZZX.h>
 #include <iostream>
+#include <iterator>
+
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 
 #include "org_wso2_siddhi_extension_he_api_HomomorphicEncDecService.h"
 
@@ -130,4 +138,82 @@ JNIEXPORT jlong JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecS
 	long decryptedNumber = 0;
 	conv(decryptedNumber, decryptedVector[0][0]);
 	return decryptedNumber;
+}
+
+JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_encryptLongVector
+(JNIEnv * env, jobject jobj, jstring val) {
+	fstream pubKeyFile(localKeyFileLocation + "/" + publicKeyFileName, fstream::in);
+	assert(pubKeyFile.is_open());
+	unsigned long m, p, r;
+	vector<long> gens, ords;
+	readContextBase(pubKeyFile, m, p, r, gens, ords);
+	FHEcontext context(m, p, r, gens, ords);
+	pubKeyFile >> context;
+	FHEPubKey publicKey(context);
+	pubKeyFile >> publicKey;
+	pubKeyFile.close();
+
+	EncryptedArray ea(context);
+	NewPlaintextArray npa(ea);
+
+	vector<ZZX> zzxVec;
+	const char *cstr = env->GetStringUTFChars(val, NULL);
+	std::vector<std::string> tokens;
+	boost::split(tokens, cstr, boost::is_any_of(","), boost::token_compress_on);
+	env->ReleaseStringUTFChars(val, cstr);
+
+	for(int i = 0;i < tokens.size(); i++){
+		zzxVec.push_back(to_ZZX(atol(tokens[i].c_str())));
+	}
+	encode(ea, npa, zzxVec);
+
+	Ctxt encryptedVal(publicKey);
+	ea.encrypt(encryptedVal, publicKey, npa);
+
+	stringstream ssEncryptedVal;
+	ssEncryptedVal << encryptedVal;
+	jstring encryptedStr = env->NewStringUTF(ssEncryptedVal.str().c_str());
+	return encryptedStr;
+}
+
+JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_decryptLongVector
+(JNIEnv * env, jobject jobj, jstring encryptedVal) {
+	fstream pubKeyFile(localKeyFileLocation + "/" + publicKeyFileName, fstream::in);
+	assert(pubKeyFile.is_open());
+	unsigned long m, p, r;
+	vector<long> gens, ords;
+	readContextBase(pubKeyFile, m, p, r, gens, ords);
+	FHEcontext context(m, p, r, gens, ords);
+	pubKeyFile >> context;
+	FHEPubKey publicKey(context);
+	pubKeyFile >> publicKey;
+	pubKeyFile.close();
+
+	fstream secKeyFile(localKeyFileLocation + "/" + securityKeyFileName, fstream::in);
+	FHESecKey secretKey(context);
+	secKeyFile >> secretKey;
+
+	EncryptedArray ea(context);
+
+	Ctxt encryptedValCyper(publicKey);
+
+	const char *cstr = env->GetStringUTFChars(encryptedVal, NULL);
+	std::string encryptedValStr = std::string(cstr);
+	env->ReleaseStringUTFChars(encryptedVal, cstr);
+	stringstream ssEncryptedVal(encryptedValStr);
+	ssEncryptedVal >> encryptedValCyper;
+
+	NewPlaintextArray npa(ea);
+	ea.decrypt(encryptedValCyper, secretKey, npa);
+	vector<ZZX> decryptedVector;
+	decode(ea, decryptedVector, npa);
+	vector<long> decryptedNumbers(decryptedVector.size());
+	for(int i = 0;i < decryptedVector.size(); i++) {
+		conv(decryptedNumbers[i], decryptedVector[i][0]);
+	}
+	std::stringstream result;
+	std::copy(decryptedNumbers.begin(), decryptedNumbers.end(), std::ostream_iterator<long>(result, ","));
+
+	jstring orb_string = env->NewStringUTF(result.str().c_str());
+	return orb_string;
 }

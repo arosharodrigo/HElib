@@ -17,28 +17,6 @@
 
 using byte = unsigned char ;
 
-template< typename T > std::array< byte, sizeof(T) >  to_bytes( const T& object )
-{
-    std::array< byte, sizeof(T) > bytes ;
-
-    const byte* begin = reinterpret_cast< const byte* >( std::addressof(object) ) ;
-    const byte* end = begin + sizeof(T) ;
-    std::copy( begin, end, std::begin(bytes) ) ;
-
-    return bytes ;
-}
-
-template< typename T >
-T& from_bytes( const std::array< byte, sizeof(T) >& bytes, T& object )
-{
-    // http://en.cppreference.com/w/cpp/types/is_trivially_copyable
-    static_assert( std::is_trivially_copyable<T>::value, "not a TriviallyCopyable type" ) ;
-
-    byte* begin_object = reinterpret_cast< byte* >( std::addressof(object) ) ;
-    std::copy( std::begin(bytes), std::end(bytes), begin_object ) ;
-
-    return object ;
-}
 
 void  TestIt(long m, long p, long r, long L, long c, long w) {
 	ZZX G;
@@ -289,13 +267,13 @@ void convert(string key, string text) {
 
 void  TestIt4() {
 	long m = 0;    // Specific modulus
-	long p = 9576890767; // Plaintext base [default=2], should be a prime number
+	long p = 1201; // Plaintext base [default=2], should be a prime number
 	long r = 1;    // Lifting [default=1]
-	long L = 1;   // Number of levels in the modulus chain [default=heuristic]
-	long c = 2;    // Number of columns in key-switching matrix [default=2]
+	long L = 2;   // Number of levels in the modulus chain [default=heuristic]
+	long c = 15;    // Number of columns in key-switching matrix [default=2]
 	long w = 64;   // Hamming weight of secret key
-	long d = 0;    // Degree of the field extension [default=1]
-	long k = 128;  // Security parameter [default=80]
+	long d = 1;    // Degree of the field extension [default=1]
+	long k = 80;  // Security parameter [default=80]
 	long s = 0;    // Minimum number of slots [default=0]
 	m = FindM(k, L, c, p, d, s, 0);
 
@@ -330,11 +308,46 @@ void  TestIt4() {
 	ea.encrypt(c0, publicKey, p0);
 	// encrypt each NewPlaintextArray
 
+	ZZX z1;
+	z1.SetLength(1);
+	z1[0] = to_ZZ(1);
+//	z1[1] = to_ZZ(3);
+//	z1[2] = to_ZZ(4);
+//	z1[3] = to_ZZ(5);
+//	z1[4] = to_ZZ(7);
+
+	cout << "e3\n";
+	vector<ZZX> zz1;
+			/*= {to_ZZX(1), z1, to_ZZX(4), to_ZZX(5),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7),
+			to_ZZX(1), to_ZZX(3), to_ZZX(4), to_ZZX(5), to_ZZX(7)};*/
+	int fullIterations = nslots/4;
+	int ramainingIterations = nslots-(fullIterations*4);
+	for(int i = 0;i < fullIterations; i++) {
+		zz1.push_back(to_ZZX(1));
+		zz1.push_back(to_ZZX(3));
+		zz1.push_back(to_ZZX(5));
+		zz1.push_back(to_ZZX(7));
+	}
+	for(int i = 0;i < ramainingIterations; i++) {
+		zz1.push_back(to_ZZX(1));
+	}
+	cout << "e4\n" << zz1.size();
 
 
 	NewPlaintextArray p1(ea);
 //	random(ea, p1);
-	encode(ea, p1, to_ZZX(5));
+	cout << "e1\n";
+	encode(ea, p1, zz1);
+	cout << "e2\n";
 	Ctxt c1(publicKey);
 	ea.encrypt(c1, publicKey, p1);
 	// Perform some simple computations directly on the plaintext arrays:
@@ -373,7 +386,7 @@ void  TestIt4() {
 //	cout << "c0:\n" << c0 << "\n";
 	cout << "\n";
 
-	convert(spublicKey, sc0);
+//	convert(spublicKey, sc0);
 
 }
 
@@ -387,31 +400,3 @@ int main(int argc, char *argv[]) {
 	TestIt4();
 }
 
-int main2()
-{
-//    double d = 123.456789 ;
-//    const auto bytes = to_bytes(d) ;
-//
-//    std::cout << std::hex << std::setfill('0') ;
-//    for( byte b : bytes ) std::cout << std::setw(2) << int(b) << ' ' ;
-//    std::cout << '\n' ;
-//
-//    d = 0 ;
-//    from_bytes( bytes, d ) ;
-//    std::cout << std::fixed << d << '\n' ;
-//
-//
-//    int arr[] = { 1, 63, 256, 511, 1024 } ;
-//    const auto array_bytes = to_bytes(arr) ;
-//
-//    for( byte b : array_bytes ) std::cout << std::setw(2) << int(b) << ' ' ;
-//    std::cout << '\n' ;
-//
-//    for( int& v : arr ) v = -1 ;
-//    from_bytes( array_bytes, arr ) ;
-//    for( int v : arr ) std::cout << std::dec << v << ' ' ;
-//    std::cout << '\n' ;
-
-
-
-}
