@@ -14,17 +14,44 @@
 #include <boost/iostreams/filter/gzip.hpp>
 
 #include "org_wso2_siddhi_extension_he_api_HomomorphicEncDecService.h"
+#include "myUtils.h"
 
-string localKeyFileLocation = "";
+string localKeyFileLocation = "/home/arosha/helib-keys";
 string publicKeyFileName = "pubkey.txt";
 string securityKeyFileName = "seckey.txt";
+//unsigned long m1, p1, r1;
+//vector<long> gens1, ords1;
+FHEcontext* globalContext;
+FHEPubKey* globalPublicKey;
+FHESecKey* globalSecretKey;
 
 JNIEXPORT void JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_init
 (JNIEnv * env, jobject jobj, jstring keyFileLocation) {
+
 	const char *cstr = env->GetStringUTFChars(keyFileLocation, NULL);
 	std::string str = std::string(cstr);
 	env->ReleaseStringUTFChars(keyFileLocation, cstr);
 	localKeyFileLocation = str;
+
+	Timer timer1;
+	timer1.start();
+	fstream pubKeyFile(localKeyFileLocation + "/" + publicKeyFileName, fstream::in);
+	assert(pubKeyFile.is_open());
+	unsigned long m, p, r;
+	vector<long> gens, ords;
+	readContextBase(pubKeyFile, m, p, r, gens, ords);
+	globalContext = new FHEcontext(m, p, r, gens, ords);
+	pubKeyFile >> *globalContext;
+	globalPublicKey = new FHEPubKey(*globalContext);
+	pubKeyFile >> *globalPublicKey;
+	pubKeyFile.close();
+
+	fstream secKeyFile(localKeyFileLocation + "/" + securityKeyFileName, fstream::in);
+	globalSecretKey = new FHESecKey(*globalContext);
+	secKeyFile >> *globalSecretKey;
+
+	timer1.stop();
+	std::cout << "Time for context creation: " << timer1.elapsed_time() << "s" << std::endl;
 }
 
 JNIEXPORT void JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_destroy
@@ -80,23 +107,23 @@ JNIEXPORT void JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecSe
 
 JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_encryptLong
 (JNIEnv * env, jobject jobj, jlong val) {
-	fstream pubKeyFile(localKeyFileLocation + "/" + publicKeyFileName, fstream::in);
-	assert(pubKeyFile.is_open());
-	unsigned long m, p, r;
-	vector<long> gens, ords;
-	readContextBase(pubKeyFile, m, p, r, gens, ords);
-	FHEcontext context(m, p, r, gens, ords);
-	pubKeyFile >> context;
-	FHEPubKey publicKey(context);
-	pubKeyFile >> publicKey;
-	pubKeyFile.close();
+//	fstream pubKeyFile(localKeyFileLocation + "/" + publicKeyFileName, fstream::in);
+//	assert(pubKeyFile.is_open());
+//	unsigned long m, p, r;
+//	vector<long> gens, ords;
+//	readContextBase(pubKeyFile, m, p, r, gens, ords);
+//	FHEcontext context(m, p, r, gens, ords);
+//	pubKeyFile >> context;
+//	FHEPubKey publicKey(context);
+//	pubKeyFile >> publicKey;
+//	pubKeyFile.close();
 
-	EncryptedArray ea(context);
+	EncryptedArray ea(*globalContext);
 
 	NewPlaintextArray npa(ea);
 	encode(ea, npa, to_ZZX((long)val));
-	Ctxt encryptedVal(publicKey);
-	ea.encrypt(encryptedVal, publicKey, npa);
+	Ctxt encryptedVal(*globalPublicKey);
+	ea.encrypt(encryptedVal, *globalPublicKey, npa);
 
 	stringstream ssEncryptedVal;
 	ssEncryptedVal << encryptedVal;
@@ -142,18 +169,21 @@ JNIEXPORT jlong JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecS
 
 JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_encryptLongVector
 (JNIEnv * env, jobject jobj, jstring val) {
-	fstream pubKeyFile(localKeyFileLocation + "/" + publicKeyFileName, fstream::in);
-	assert(pubKeyFile.is_open());
-	unsigned long m, p, r;
-	vector<long> gens, ords;
-	readContextBase(pubKeyFile, m, p, r, gens, ords);
-	FHEcontext context(m, p, r, gens, ords);
-	pubKeyFile >> context;
-	FHEPubKey publicKey(context);
-	pubKeyFile >> publicKey;
-	pubKeyFile.close();
+	Timer timer2;
+	timer2.start();
+//
+//	fstream pubKeyFile(localKeyFileLocation + "/" + publicKeyFileName, fstream::in);
+//	assert(pubKeyFile.is_open());
+//	unsigned long m, p, r;
+//	vector<long> gens, ords;
+//	readContextBase(pubKeyFile, m, p, r, gens, ords);
+//	FHEcontext context(m, p, r, gens, ords);
+//	pubKeyFile >> context;
+//	FHEPubKey publicKey(context);
+//	pubKeyFile >> publicKey;
+//	pubKeyFile.close();
 
-	EncryptedArray ea(context);
+	EncryptedArray ea(*globalContext);
 	NewPlaintextArray npa(ea);
 
 	vector<ZZX> zzxVec;
@@ -166,36 +196,45 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDe
 		zzxVec.push_back(to_ZZX(atol(tokens[i].c_str())));
 	}
 	encode(ea, npa, zzxVec);
+	Ctxt encryptedVal(*globalPublicKey);
+	timer2.stop();
+	std::cout << "Time for preparation: " << timer2.elapsed_time() << "s" << std::endl;
 
-	Ctxt encryptedVal(publicKey);
-	ea.encrypt(encryptedVal, publicKey, npa);
+	Timer tEncryption;
+	tEncryption.start();
+	ea.encrypt(encryptedVal, *globalPublicKey, npa);
+	tEncryption.stop();
+	std::cout << "Time for encryption: " << tEncryption.elapsed_time() << "s" << std::endl;
 
 	stringstream ssEncryptedVal;
 	ssEncryptedVal << encryptedVal;
 	jstring encryptedStr = env->NewStringUTF(ssEncryptedVal.str().c_str());
+
+
+
 	return encryptedStr;
 }
 
 JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_decryptLongVector
 (JNIEnv * env, jobject jobj, jstring encryptedVal) {
-	fstream pubKeyFile(localKeyFileLocation + "/" + publicKeyFileName, fstream::in);
-	assert(pubKeyFile.is_open());
-	unsigned long m, p, r;
-	vector<long> gens, ords;
-	readContextBase(pubKeyFile, m, p, r, gens, ords);
-	FHEcontext context(m, p, r, gens, ords);
-	pubKeyFile >> context;
-	FHEPubKey publicKey(context);
-	pubKeyFile >> publicKey;
-	pubKeyFile.close();
+//	fstream pubKeyFile(localKeyFileLocation + "/" + publicKeyFileName, fstream::in);
+//	assert(pubKeyFile.is_open());
+//	unsigned long m, p, r;
+//	vector<long> gens, ords;
+//	readContextBase(pubKeyFile, m, p, r, gens, ords);
+//	FHEcontext context(m, p, r, gens, ords);
+//	pubKeyFile >> context;
+//	FHEPubKey publicKey(context);
+//	pubKeyFile >> publicKey;
+//	pubKeyFile.close();
+//
+//	fstream secKeyFile(localKeyFileLocation + "/" + securityKeyFileName, fstream::in);
+//	FHESecKey secretKey(context);
+//	secKeyFile >> secretKey;
 
-	fstream secKeyFile(localKeyFileLocation + "/" + securityKeyFileName, fstream::in);
-	FHESecKey secretKey(context);
-	secKeyFile >> secretKey;
+	EncryptedArray ea(*globalContext);
 
-	EncryptedArray ea(context);
-
-	Ctxt encryptedValCyper(publicKey);
+	Ctxt encryptedValCyper(*globalPublicKey);
 
 	const char *cstr = env->GetStringUTFChars(encryptedVal, NULL);
 	std::string encryptedValStr = std::string(cstr);
@@ -204,7 +243,7 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDe
 	ssEncryptedVal >> encryptedValCyper;
 
 	NewPlaintextArray npa(ea);
-	ea.decrypt(encryptedValCyper, secretKey, npa);
+	ea.decrypt(encryptedValCyper, *globalSecretKey, npa);
 	vector<ZZX> decryptedVector;
 	decode(ea, decryptedVector, npa);
 	vector<long> decryptedNumbers(decryptedVector.size());
@@ -217,3 +256,4 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDe
 	jstring orb_string = env->NewStringUTF(result.str().c_str());
 	return orb_string;
 }
+
