@@ -29,7 +29,7 @@ JNIEXPORT void JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecSe
  * Signature: (Ljava/lang/String;JJJJJJJJ)V
  */
 JNIEXPORT void JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDecService_generateKeys
-  (JNIEnv *, jobject, jlong, jlong, jlong, jlong, jlong, jlong, jlong, jlong);
+  (JNIEnv *, jobject, jstring, jlong, jlong, jlong, jlong, jlong, jlong, jlong, jlong);
 
 /*
  * Class:     org_wso2_siddhi_extension_he_api_HomomorphicEncDecService
