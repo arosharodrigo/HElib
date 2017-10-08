@@ -67,3 +67,29 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncry
 	jstring resultStr = env->NewStringUTF(ssResult.str().c_str());
 	return resultStr;
 }
+
+JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncryptionEvaluation_evaluateSubtract
+(JNIEnv * env, jobject jobj, jstring param1, jstring param2) {
+	EncryptedArray ea(*globalContext2);
+	Ctxt c1(*globalPublicKey2);
+
+	const char *cstr1 = env->GetStringUTFChars(param1, NULL);
+	std::string str1 = std::string(cstr1);
+	env->ReleaseStringUTFChars(param1, cstr1);
+	stringstream ssparam1(str1);
+	ssparam1 >> c1;
+
+	Ctxt c2(*globalPublicKey2);
+	const char *cstr2 = env->GetStringUTFChars(param2, NULL);
+	std::string str2 = std::string(cstr2);
+	env->ReleaseStringUTFChars(param2, cstr2);
+	stringstream ssparam2(str2);
+	ssparam2 >> c2;
+
+	c1.addCtxt(c2, true);
+
+	stringstream ssResult;
+	ssResult << c1;
+	jstring resultStr = env->NewStringUTF(ssResult.str().c_str());
+	return resultStr;
+}

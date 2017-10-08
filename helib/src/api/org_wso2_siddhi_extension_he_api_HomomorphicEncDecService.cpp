@@ -197,7 +197,11 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncDe
 
 	vector<long> decryptedNumbers(decryptedVector.size());
 	for(int i = 0;i < decryptedVector.size(); i++) {
-		conv(decryptedNumbers[i], decryptedVector[i][0]);
+		if(decryptedVector[i] == 0) {
+			conv(decryptedNumbers[i], 0);
+		} else {
+			conv(decryptedNumbers[i], decryptedVector[i][0]);
+		}
 	}
 	std::stringstream result;
 	std::copy(decryptedNumbers.begin(), decryptedNumbers.end(), std::ostream_iterator<long>(result, ","));
