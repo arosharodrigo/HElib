@@ -1,3 +1,6 @@
+How to Install
+==============
+
 We need to install softwares in following order.
 Following guide will install all softwares under '$HOME/sw/'. Therefore make sure to create 'sw' dir in $HOME.
 
@@ -64,6 +67,13 @@ Following guide will install all softwares under '$HOME/sw/'. Therefore make sur
 6.5 References -
 	http://www.boost.org/doc/libs/1_61_0/more/getting_started/unix-variants.html
 	http://www.boost.org/doc/libs/1_62_0/libs/iostreams/doc/installation.html
+
+How to Build
+============
+1. Goto '<HElib>/helib/src/api' and execute 'make'.
+2. Set 'java.library.path' in JVMs
+	ex: -ea -Djava.library.path=<HElib>/helib/src/api
+
 
 
 
