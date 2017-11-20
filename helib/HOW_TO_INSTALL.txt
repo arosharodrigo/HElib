@@ -1,0 +1,69 @@
+We need to install softwares in following order.
+Following guide will install all softwares under '$HOME/sw/'. Therefore make sure to create 'sw' dir in $HOME.
+
+1. M4 - m4-1.4.18
+
+1.1 Download using 'wget ftp://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz'
+1.2 ./configure --prefix=${HOME}/sw/
+1.3 make
+1.4 make install
+1.5 Add M4 path to .profile(ubuntu) as follows: 
+	export M4_HOME=/home/aroshar/install/m4/installed
+	export PATH=$M4_HOME/bin:$PATH
+1.6 Reference - 
+	https://geeksww.com/tutorials/libraries/m4/installation/installing_m4_macro_processor_ubuntu_linux.php
+
+2. GMP - 6.1.2
+
+2.1 Download 6.1.2 release of GMP from 'https://gmplib.org/#DOWNLOAD'
+2.2 ./configure CXXFLAGS='-fPIC -pthread' --prefix=${HOME}/sw/
+2.3 make
+2.4 make install
+2.5 Execute or add into .profile following pass the tests: 'export LD_LIBRARY_PATH=$HOME/sw/lib:$LD_LIBRARY_PATH'
+2.6 make check
+2.7 Reference - 
+	http://linkevin.me/tutorial-installing-gmp-library-ubuntu/
+
+3. NTL - 10.5.0
+
+3.1 Download 10.5.0 version from http://www.shoup.net/ntl/download.html.
+3.2 Goto src/ and execute './configure CXXFLAGS='-g -O2 -fPIC -std=c++11 -pthread' DEF_PREFIX=$HOME/sw NTL_THREADS=on NTL_THREAD_BOOST=on'
+3.3 make
+3.4 make install
+3.5 make check
+3.6 References -
+	http://www.shoup.net/ntl/doc/tour-gmp.html
+	http://www.shoup.net/ntl/doc/tour-unix.html
+
+4. ZLIB - 1.2.11
+
+4.1 Download relevant version from 'https://zlib.net/'
+4.2 ./configure --prefix=$HOME/sw
+4.3 make
+4.4 make install
+4.5 Add ZLIB paths to .profile(ubuntu) as follows:
+	export ZLIB_INCLUDE=$HOME/sw/include
+	export ZLIB_LIBPATH=$HOME/sw/lib
+
+5. BZIP2 - 1.0.6
+
+5.1 Download relevant version from 'http://www.bzip.org/downloads.html'
+5.2 Add -fPIC flag into gcc command(CFLAGS) under Makefile (CFLAGS=-Wall -fPIC -Winline -O2 -g $(BIGFILES))
+5.3 make
+5.4 make install PREFIX=$HOME/sw
+5.5 Add BZIP2 paths to .profile(ubuntu) as follows:
+	export BZIP2_INCLUDE=$HOME/sw/include
+	export BZIP2_LIBPATH=$HOME/sw/lib
+
+6. Boost 1_61_0
+
+6.1 Download relevant version from 'http://www.boost.org/doc/libs/1_61_0/more/getting_started/unix-variants.html'
+6.2 ./bootstrap.sh --prefix=$HOME/sw --without-libraries=python
+6.3 ./b2 --prefix=$HOME/sw --without-python
+6.4 ./b2 install
+6.5 References -
+	http://www.boost.org/doc/libs/1_61_0/more/getting_started/unix-variants.html
+	http://www.boost.org/doc/libs/1_62_0/libs/iostreams/doc/installation.html
+
+
+
