@@ -43,6 +43,9 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncry
 JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncryptionEvaluation_evaluateLessThanBitSize2
         (JNIEnv *, jobject, jstring, jstring, jstring, jstring);
 
+JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncryptionEvaluation_evaluateEqualBitSize2
+        (JNIEnv *, jobject, jstring, jstring, jstring, jstring);
+
 #ifdef __cplusplus
 }
 #endif
