@@ -34,6 +34,12 @@ JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncry
 JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncryptionEvaluation_evaluateSubtract
   (JNIEnv *, jobject, jstring, jstring);
 
+JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncryptionEvaluation_evaluateMultiply
+        (JNIEnv *, jobject, jstring, jstring);
+
+JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncryptionEvaluation_evaluateDivide
+        (JNIEnv *, jobject, jstring, jstring);
+
 JNIEXPORT jstring JNICALL Java_org_wso2_siddhi_extension_he_api_HomomorphicEncryptionEvaluation_evaluateGreaterThanBitSize1
         (JNIEnv *, jobject, jstring, jstring);
 
